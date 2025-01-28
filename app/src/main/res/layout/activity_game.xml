@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".GameActivity">
+
+    <ImageView
+        android:id="@+id/img_profile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@+id/img_line_separator_top_game"
+        app:layout_constraintEnd_toStartOf="@+id/txt_money_value"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/txt_money_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@+id/img_line_separator_top_game"
+        app:layout_constraintEnd_toStartOf="@+id/btn_game_config"
+        app:layout_constraintStart_toEndOf="@+id/img_profile"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/btn_game_config"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@+id/img_line_separator_top_game"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/txt_money_value"
+        app:layout_constraintTop_toTopOf="parent"  />
+
+    <ImageView
+        android:id="@+id/img_line_separator_top_game"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txt_money_value" />
+
+    <TextView
+        android:id="@+id/txt_amount_pregos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/img_pregos"
+        app:layout_constraintTop_toBottomOf="@id/img_pregos"
+        />
+
+    <ImageView
+        android:id="@+id/img_pregos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/img_line_separator_top_game"
+        app:layout_constraintStart_toEndOf="@+id/txt_amount_pregos"
+        app:layout_constraintEnd_toStartOf="@+id/img_progressbar_pregos"
+        />
+
+    <ImageView
+        android:id="@+id/img_progressbar_pregos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/img_line_separator_top_game"
+        app:layout_constraintStart_toEndOf="@+id/img_pregos"
+        app:layout_constraintBottom_toTopOf="@+id/btn_buy_pregos"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
+    <ImageButton
+        android:id="@+id/btn_buy_pregos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/img_progressbar_pregos"
+        app:layout_constraintStart_toEndOf="@+id/img_pregos"
+        app:layout_constraintEnd_toStartOf="@+id/txt_money_per_second_pregos"
+        />
+    <TextView
+        android:id="@+id/txt_money_per_second_pregos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/img_progressbar_pregos"
+        app:layout_constraintStart_toEndOf="@+id/btn_buy_pregos"
+        />
+
+    <TextView
+        android:id="@+id/txt_amount_ferraduras"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/img_ferraduras"
+        app:layout_constraintTop_toBottomOf="@id/img_ferraduras"
+        />
+
+    <ImageView
+        android:id="@+id/img_ferraduras"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/img_line_separator_top_game"
+        app:layout_constraintStart_toEndOf="@+id/txt_amount_ferraduras"
+        app:layout_constraintEnd_toStartOf="@+id/img_pregos"
+        />
+
+    <ImageView
+        android:id="@+id/img_progressbar_ferraduras"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/btn_buy_pregos"
+        app:layout_constraintStart_toEndOf="@+id/img_ferraduras"
+        app:layout_constraintBottom_toTopOf="@+id/btn_buy_ferraduras"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
+    <ImageButton
+        android:id="@+id/btn_buy_ferraduras"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/img_progressbar_ferraduras"
+        app:layout_constraintStart_toEndOf="@+id/img_ferraduras"
+        app:layout_constraintEnd_toStartOf="@+id/txt_money_per_second_ferraduras"
+        />
+    <TextView
+        android:id="@+id/txt_money_per_second_ferraduras"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/img_progressbar_ferraduras"
+        app:layout_constraintStart_toEndOf="@+id/btn_buy_ferraduras"
+        />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
