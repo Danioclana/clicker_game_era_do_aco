@@ -13,6 +13,9 @@
         android:theme="@style/Theme.EraDoAco"
         tools:targetApi="31">
         <activity
+            android:name=".UpgradeActivity"
+            android:exported="false" />
+        <activity
             android:name=".GameActivity"
             android:exported="false" />
         <activity
