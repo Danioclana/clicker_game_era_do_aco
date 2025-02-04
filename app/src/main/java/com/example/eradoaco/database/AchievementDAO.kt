@@ -9,6 +9,7 @@ class AchievementDAO(context: Context) {
     private val dbHelper = Database(context)
 
     fun insertAchievement(achievement: Achievement) {
+        if (getAchievements().any { it.id == achievement.id }) return
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put("ID", achievement.id)

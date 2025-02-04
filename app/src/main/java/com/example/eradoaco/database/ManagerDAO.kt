@@ -9,6 +9,7 @@ class ManagerDAO(context: Context) {
     private val dbHelper = Database(context)
 
     fun insertManager(manager: Manager) {
+        if (getManagers().any { it.id == manager.id }) return
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put("ID", manager.id)

@@ -9,6 +9,7 @@ class ToolDAO(context: Context) {
     private val dbHelper = Database(context)
 
     fun insertTool(tool: Tool) {
+        if (getTools().any { it.id == tool.id }) return
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put("ID", tool.id)

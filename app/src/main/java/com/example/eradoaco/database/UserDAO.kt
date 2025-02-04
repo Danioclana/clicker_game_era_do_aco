@@ -9,6 +9,7 @@ class UserDAO(context: Context) {
     private val dbHelper = Database(context)
 
     fun insertUser(user: User) {
+        if (getUser() != null) return
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put("NAME", user.name)

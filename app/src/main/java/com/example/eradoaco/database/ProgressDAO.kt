@@ -9,6 +9,7 @@ class ProgressDAO(context: Context) {
     private val dbHelper = Database(context)
 
     fun saveProgress(progress: Progress) {
+        if (getProgress() != null) return
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put("MONEY", progress.money)
@@ -17,7 +18,7 @@ class ProgressDAO(context: Context) {
             put("FK_ID_ACHIEVEMENTS", progress.achievementsId)
             put("FK_ID_TOOL", progress.toolId)
         }
-        db.update("PROGRESS", values, null, null)
+        db.insert("PROGRESS", null, values)
         db.close()
     }
 

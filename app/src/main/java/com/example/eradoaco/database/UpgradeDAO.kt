@@ -9,6 +9,7 @@ class UpgradeDAO(context: Context) {
     private val dbHelper = Database(context)
 
     fun insertUpgrade(upgrade: Upgrade) {
+        if (getUpgrades().any { it.id == upgrade.id }) return
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put("ID", upgrade.id)
