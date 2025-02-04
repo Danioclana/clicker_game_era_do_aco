@@ -24,13 +24,19 @@
         android:id="@+id/txt_money_value"
         android:layout_width="200dp"
         android:layout_height="50dp"
+        android:background="@drawable/banner_dinheiro"
+        android:fontFamily="@font/montserrat_fina"
+        android:gravity="top|center"
+        android:paddingTop="3dp"
+        android:text="$ 0,00"
+        android:textColor="#FFFFFF"
+        android:textSize="24dp"
         app:layout_constraintBottom_toTopOf="@+id/img_line_separator_top_game"
         app:layout_constraintEnd_toStartOf="@+id/btn_game_config"
         app:layout_constraintStart_toEndOf="@+id/img_profile"
         app:layout_constraintTop_toTopOf="parent"
-        android:background="@drawable/banner_dinheiro"
         app:layout_constraintVertical_bias="0.03"
-        app:layout_constraintVertical_chainStyle="packed"/>
+        app:layout_constraintVertical_chainStyle="packed" />
 
     <ImageButton
         android:id="@+id/btn_game_config"
@@ -65,12 +71,12 @@
         android:fontFamily="@font/montserrat_fina"
         android:textSize="10sp"
         android:textColor="#FFFFFF"
-        app:layout_constraintEnd_toStartOf="@+id/img_pregos"
-        app:layout_constraintTop_toTopOf="@id/img_pregos"
+        app:layout_constraintEnd_toStartOf="@+id/btn_pregos"
+        app:layout_constraintTop_toTopOf="@id/btn_pregos"
         android:background="@drawable/fundo_level" />
 
-    <ImageView
-        android:id="@+id/img_pregos"
+    <ImageButton
+        android:id="@+id/btn_pregos"
         android:layout_width="60dp"
         android:layout_height="60dp"
         app:layout_constraintTop_toBottomOf="@+id/img_line_separator_top_game"
@@ -81,15 +87,18 @@
         app:layout_constraintHorizontal_chainStyle="packed"
         />
 
-    <ImageView
+    <ProgressBar
         android:id="@+id/img_progressbar_pregos"
-        android:layout_width="245dp"
-        android:layout_height="25dp"
+        android:layout_width="200dp"
+        android:layout_height="20dp"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:progressDrawable="@drawable/custom_progress_bar"
+        android:max="100"
+        android:progress="2"
         app:layout_constraintTop_toBottomOf="@+id/img_line_separator_top_game"
-        app:layout_constraintStart_toEndOf="@+id/img_pregos"
+        app:layout_constraintStart_toEndOf="@+id/btn_pregos"
         app:layout_constraintBottom_toTopOf="@+id/btn_buy_pregos"
         app:layout_constraintEnd_toEndOf="parent"
-        android:background="@drawable/barra_progresso"
         android:layout_marginTop="20dp"
         />
 
@@ -101,7 +110,7 @@
         android:clickable="true"
         android:focusable="true"
         app:layout_constraintTop_toBottomOf="@+id/img_progressbar_pregos"
-        app:layout_constraintStart_toEndOf="@+id/img_pregos"
+        app:layout_constraintStart_toEndOf="@+id/btn_pregos"
         app:layout_constraintEnd_toStartOf="@+id/txt_money_per_second_pregos"
         android:layout_marginTop="5dp">
 

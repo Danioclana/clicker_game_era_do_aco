@@ -21,7 +21,7 @@ class HomeActivity : AppCompatActivity() {
 
         // se clicar em começar jogo, vai para a tela de teste do banco de dados
         findViewById<FrameLayout>(R.id.btn_comecar).setOnClickListener {
-            startActivity(Intent(this, DatabaseTestActivity::class.java))
+            startActivity(Intent(this, GameActivity::class.java))
         }
     }
 }
