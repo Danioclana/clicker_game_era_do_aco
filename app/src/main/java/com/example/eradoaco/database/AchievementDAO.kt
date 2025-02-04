@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import com.example.eradoaco.models.Achievement
+import com.example.eradoaco.models.AchievementName
 
 class AchievementDAO(context: Context) {
     private val dbHelper = Database(context)
@@ -13,7 +14,7 @@ class AchievementDAO(context: Context) {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put("ID", achievement.id)
-            put("NAME", achievement.name)
+            put("NAME", achievement.name.name)
             put("PROGRESS", achievement.progress)
         }
         db.insert("CLASS_ACHIEVEMENTS", null, values)
@@ -26,10 +27,13 @@ class AchievementDAO(context: Context) {
         val achievements = mutableListOf<Achievement>()
 
         while (cursor.moveToNext()) {
+            val achievementNameString = cursor.getString(cursor.getColumnIndexOrThrow("NAME"))
+            val achievementName = AchievementName.fromString(achievementNameString) ?: AchievementName.PRIMEIRO_PREGO
+
             achievements.add(
                 Achievement(
                     cursor.getInt(cursor.getColumnIndexOrThrow("ID")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("NAME")),
+                    achievementName,
                     cursor.getInt(cursor.getColumnIndexOrThrow("PROGRESS"))
                 )
             )

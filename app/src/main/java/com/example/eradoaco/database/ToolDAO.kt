@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import com.example.eradoaco.models.Tool
+import com.example.eradoaco.models.ToolName
 
 class ToolDAO(context: Context) {
     private val dbHelper = Database(context)
@@ -13,7 +14,7 @@ class ToolDAO(context: Context) {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put("ID", tool.id)
-            put("NAME", tool.name)
+            put("NAME", tool.name.name)
             put("AMOUNT", tool.amount)
         }
         db.insert("CLASS_TOOL", null, values)
@@ -26,10 +27,13 @@ class ToolDAO(context: Context) {
         val tools = mutableListOf<Tool>()
 
         while (cursor.moveToNext()) {
+            val toolNameString = cursor.getString(cursor.getColumnIndexOrThrow("NAME"))
+            val toolName = ToolName.fromString(toolNameString) ?: ToolName.PREGO
+
             tools.add(
                 Tool(
                     cursor.getInt(cursor.getColumnIndexOrThrow("ID")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("NAME")),
+                    toolName,
                     cursor.getInt(cursor.getColumnIndexOrThrow("AMOUNT"))
                 )
             )
