@@ -1,6 +1,8 @@
 package com.example.eradoaco
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.FrameLayout
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -15,6 +17,11 @@ class HomeActivity : AppCompatActivity() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
+        }
+
+        // se clicar em começar jogo, vai para a tela de teste do banco de dados
+        findViewById<FrameLayout>(R.id.btn_comecar).setOnClickListener {
+            startActivity(Intent(this, DatabaseTestActivity::class.java))
         }
     }
 }

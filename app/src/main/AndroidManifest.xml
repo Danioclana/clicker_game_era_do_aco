@@ -22,6 +22,9 @@
             android:name=".GameActivity"
             android:exported="false" />
         <activity
+            android:name=".DatabaseTestActivity"
+            android:exported="false" />
+        <activity
             android:name=".HomeActivity"
             android:exported="true">
             <intent-filter>
