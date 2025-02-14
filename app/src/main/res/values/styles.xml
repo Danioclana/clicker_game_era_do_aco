@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="other_elements">
-        <item name="android:visibility">invisible</item>
+        <item name="android:visibility">gone</item>
     </style>
     <style name="btn_hide">
-        <item name="android:visibility">visible</item>
+        <item name="android:visibility">gone</item>
+    </style>
+    <style name="ferraduras">
+        <item name="android:visibility">gone</item>
     </style>
 </resources>
