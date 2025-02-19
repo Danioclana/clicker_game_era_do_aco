@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.eradoaco.UpgradeActivity
 import com.example.eradoaco.models.GameViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -102,7 +103,7 @@ class GameActivity : AppCompatActivity() {
         startManagers(GameData.managers)
 
 
-            GameViewModel.GameManager.registerMoneyListener { newMoney ->
+        GameViewModel.GameManager.registerMoneyListener { newMoney ->
             txt_money_value.text = formatarValor(newMoney)
         }
 

@@ -42,8 +42,8 @@ class UpgradeActivity : AppCompatActivity() {
 
         txt_money_value.text = formatarValor(GameData.money)
 
-            GameViewModel.GameManager.registerMoneyListener { newMoney ->
-                txt_money_value.text = formatarValor(newMoney)
+        GameViewModel.GameManager.registerMoneyListener { newMoney ->
+            txt_money_value.text = formatarValor(newMoney)
         }
 
         GameViewModel.GameManager.updateMoney(GameData.money)
