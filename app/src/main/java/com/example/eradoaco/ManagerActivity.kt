@@ -11,6 +11,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.eradoaco.GameActivity.GameData
+import com.example.eradoaco.models.GameViewModel
+import com.example.eradoaco.GameActivity.Companion.formatarValor
 
 class ManagerActivity : AppCompatActivity() {
 
@@ -37,7 +39,14 @@ class ManagerActivity : AppCompatActivity() {
         btn_return = findViewById(R.id.btn_return)
 
 
-        txt_money_value.text = GameActivity.formatarValor(GameData.money)
+        txt_money_value.text = formatarValor(GameData.money)
+
+        GameViewModel.GameManager.registerMoneyListener { newMoney ->
+            txt_money_value.text = formatarValor(newMoney)
+        }
+
+        GameViewModel.GameManager.updateMoney(GameData.money)
+
 
 
         btn_buy_managers.setOnClickListener {
@@ -66,4 +75,12 @@ class ManagerActivity : AppCompatActivity() {
 
 
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        GameViewModel.GameManager.unregisterMoneyListener { newMoney ->
+            txt_money_value.text = formatarValor(newMoney)
+        }
+    }
+
 }

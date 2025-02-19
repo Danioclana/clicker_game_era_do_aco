@@ -17,6 +17,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.eradoaco.models.GameViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class GameActivity : AppCompatActivity() {
 
@@ -26,6 +32,8 @@ class GameActivity : AppCompatActivity() {
     private lateinit var btn_upgrades: ImageButton
     private lateinit var handler: Handler
     private lateinit var handlerPregos: Handler
+    private var autoClickPregosAtivo: Boolean = false
+    private var autoClickJob: Job? = null
 
 
     private lateinit var txt_amount_pregos: TextView
@@ -65,6 +73,7 @@ class GameActivity : AppCompatActivity() {
         btn_upgrades = findViewById(R.id.btn_upgrades)
         handler = Handler(Looper.getMainLooper())
         handlerPregos = Handler(Looper.getMainLooper())
+        autoClickPregosAtivo = false
 
         txt_amount_pregos = findViewById(R.id.txt_amount_pregos)
         txt_money_per_second_pregos = findViewById(R.id.txt_money_per_second_pregos)
@@ -92,11 +101,10 @@ class GameActivity : AppCompatActivity() {
 
         startManagers(GameData.managers)
 
-        val sharedPref = getSharedPreferences("UPGRADE_PREFS", MODE_PRIVATE)
-        sharedPref.edit().putBoolean("PREGOS_VISIBLE", true).apply()
-        sharedPref.edit().putBoolean("FERRADURAS_VISIBLE", false).apply()
-        sharedPref.edit().putBoolean("ADAGAS_VISIBLE", false).apply()
 
+            GameViewModel.GameManager.registerMoneyListener { newMoney ->
+            txt_money_value.text = formatarValor(newMoney)
+        }
 
 
         btn_pregos.setOnClickListener {
@@ -157,7 +165,7 @@ class GameActivity : AppCompatActivity() {
                 GameData.value_pregos = calcularProducao(GameData.value_pregos, txt_amount_pregos.text.toString().toInt(), valorCrecimento)
                 val novoValor = calcularCusto(btnPriceValue, txt_amount_pregos.text.toString().toInt(), valorCrecimento)
                 btn_buy_pregos_txt.text = formatarValor(novoValor)
-                GameData.money -= btnPriceValue
+                GameViewModel.GameManager.updateMoney(GameData.money - btnPriceValue)
                 txt_money_value.text = formatarValor(GameData.money)
             }
         }
@@ -194,53 +202,44 @@ class GameActivity : AppCompatActivity() {
 
     }
 
+
+
     fun iniciarAutoClickPregos() {
-        if (GameData.managers == 1) {
-            btn_pregos.isEnabled = false
+        if (GameData.managers != 1) {
+            Log.e("Error", "Erro: manager não comprado, valor: ${GameData.managers}")
+            return
+        }
 
-            val txtMoneyPerSecondPregosAux = txt_money_per_second_pregos.text.toString()
-                .replace("s", "")
-                .trim()
-                .toIntOrNull() ?: 0  // Evita erro de conversão
+        if (autoClickPregosAtivo) {
+            Log.w("AutoClick", "Já existe um auto-click em andamento!")
+            return
+        }
 
-            GameData.money = txt_money_value.text.toString()
-                .replace("$", "")
-                .trim()
-                .toIntOrNull() ?: 0  // Evita erro de conversão
+        autoClickPregosAtivo = true
+        btn_pregos.isEnabled = false
 
-            try {
-                // Adiciona dinheiro de forma controlada
-                GameData.money += GameData.value_pregos
+        // Cancela qualquer loop anterior antes de iniciar um novo
+        autoClickJob?.cancel()
 
-                // Atualiza UI (na thread principal)
-                txt_money_value.post {
-                    txt_money_value.text = formatarValor(GameData.money)
-                }
-
-                // Reinicia a progress bar corretamente antes da nova animação
-                progressbarPregos.progress = 0
-                animator_progressbarPregos.cancel() // Cancela a animação anterior se houver
-
-                // Configura e inicia a animação da progress bar
+        autoClickJob = CoroutineScope(Dispatchers.Main).launch {
+            while (autoClickPregosAtivo) {
+                progressbarPregos.progress = 0  // Reset para garantir que a barra reinicie
+                animator_progressbarPregos.cancel()  // Cancela qualquer animação anterior
                 animator_progressbarPregos.duration = GameData.timeProductionPregos
                 animator_progressbarPregos.start()
 
                 animator_progressbarPregos.doOnEnd {
-                    txt_money_value.text = formatarValor(GameData.money)
-                    progressbarPregos.progress = 0
-                    txt_money_per_second_pregos.text = "${GameData.timeProductionPregos / 1000} s"
-
                     btn_pregos.isEnabled = true
-
-                    // Agendar a próxima execução de forma segura
-                    handlerPregos.postDelayed({ iniciarAutoClickPregos() }, GameData.timeProductionPregos)
                 }
-            } catch (e: NumberFormatException) {
-                Log.e("Error", "Erro ao converter o valor: $GameData.money", e)
-                btn_pregos.isEnabled = true
+
+                delay(GameData.timeProductionPregos)  // Espera o tempo de produção
+
+                GameData.money += GameData.value_pregos
+                GameViewModel.GameManager.updateMoney(GameData.money)
+
+                txt_money_value.text = formatarValor(GameData.money)
+                txt_money_per_second_pregos.text = "${GameData.timeProductionPregos / 1000} s"
             }
-        } else {
-            Log.e("Error", "Erro: manager não comprado, valor: ${GameData.managers}")
         }
     }
 
@@ -264,6 +263,13 @@ class GameActivity : AppCompatActivity() {
     fun calcularTempoFabricacao(tempoBase: Int, quantidade: Int): Int {
         val reducoes = quantidade / 50
         return tempoBase / Math.pow(2.0, reducoes.toDouble()).toInt().coerceAtLeast(1)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        GameViewModel.GameManager.unregisterMoneyListener { newMoney ->
+            txt_money_value.text = formatarValor(newMoney)
+        }
     }
 
 
@@ -321,7 +327,7 @@ class GameActivity : AppCompatActivity() {
     object GameData {
         var managers: Int = 0
         var money: Int = 0
-        var pregos_upgrades: Int = 0
+        var pregos_upgrades: Boolean = true
         var value_pregos: Int = 1
         var timeProductionPregos: Long = 2000L
 
