@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ProgressBar
@@ -23,6 +24,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.example.eradoaco.database.ProgressDAO
+import com.example.eradoaco.models.Progress
 
 class GameActivity : AppCompatActivity() {
 
@@ -43,7 +46,6 @@ class GameActivity : AppCompatActivity() {
     private lateinit var btn_buy_pregos: FrameLayout
     private lateinit var btn_buy_pregos_txt: TextView
     private lateinit var animator_progressbarPregos: ObjectAnimator
-
 
     private lateinit var btn_hide_ferraduras: FrameLayout
     private lateinit var btn_hide_ferraduras_txt: TextView
@@ -94,14 +96,13 @@ class GameActivity : AppCompatActivity() {
         btn_buy_ferraduras = findViewById(R.id.btn_buy_ferraduras)
         btn_buy_ferraduras_txt = findViewById(R.id.btn_buy_ferraduras_txt)
 
+        loadProgress()
 
         txt_money_value.text = formatarValor(GameData.money)
         animator_progressbarPregos.duration = GameData.timeProductionPregos
-        animator_progressbarPregos.interpolator = android.view.animation.AccelerateDecelerateInterpolator()
+        animator_progressbarPregos.interpolator = AccelerateDecelerateInterpolator()
 
         startManagers(GameData.managers)
-
-
             GameViewModel.GameManager.registerMoneyListener { newMoney ->
             txt_money_value.text = formatarValor(newMoney)
         }
@@ -123,9 +124,6 @@ class GameActivity : AppCompatActivity() {
 
             try {
                 GameData.money += GameData.value_pregos
-
-
-
                 animator_progressbarPregos.start()
 
                 animator_progressbarPregos.doOnEnd {
@@ -137,6 +135,8 @@ class GameActivity : AppCompatActivity() {
                     txt_money_per_second_pregos.text = "" + (timeProductionFerraduras.toInt()/1000) + " s"
                     btn_pregos.isEnabled = true
                 }
+
+                saveProgress()
 
             } catch (e: NumberFormatException) {
                 Log.e("Error", "Erro ao converter o valor: $GameData.money", e)
@@ -198,8 +198,6 @@ class GameActivity : AppCompatActivity() {
             startActivity(Intent(this, UpgradeActivity::class.java))
         }
 
-
-
     }
 
 
@@ -218,8 +216,24 @@ class GameActivity : AppCompatActivity() {
         autoClickPregosAtivo = true
         btn_pregos.isEnabled = false
 
-        // Cancela qualquer loop anterior antes de iniciar um novo
-        autoClickJob?.cancel()
+            val txtMoneyPerSecondPregosAux = txt_money_per_second_pregos.text.toString()
+                .replace("s", "")
+                .trim()
+                .toIntOrNull() ?: 0  // Evita erro de conversão
+
+            GameData.money = txt_money_value.text.toString()
+                .replace("$", "")
+                .trim()
+                .toIntOrNull() ?: 0  // Evita erro de conversão
+
+            try {
+                // Adiciona dinheiro de forma controlada
+                GameData.money += GameData.value_pregos
+
+                // Atualiza UI (na thread principal)
+                txt_money_value.post {
+                    txt_money_value.text = formatarValor(GameData.money)
+                }
 
         autoClickJob = CoroutineScope(Dispatchers.Main).launch {
             while (autoClickPregosAtivo) {
@@ -229,16 +243,18 @@ class GameActivity : AppCompatActivity() {
                 animator_progressbarPregos.start()
 
                 animator_progressbarPregos.doOnEnd {
+                    txt_money_value.text = formatarValor(GameData.money)
+                    progressbarPregos.progress = 0
+                    txt_money_per_second_pregos.text = "${GameData.timeProductionPregos / 1000} s"
+
                     btn_pregos.isEnabled = true
+
+                    // Agendar a próxima execução de forma segura
+                    handlerPregos.postDelayed({ iniciarAutoClickPregos() }, GameData.timeProductionPregos)
                 }
-
-                delay(GameData.timeProductionPregos)  // Espera o tempo de produção
-
-                GameData.money += GameData.value_pregos
-                GameViewModel.GameManager.updateMoney(GameData.money)
-
-                txt_money_value.text = formatarValor(GameData.money)
-                txt_money_per_second_pregos.text = "${GameData.timeProductionPregos / 1000} s"
+            } catch (e: NumberFormatException) {
+                Log.e("Error", "Erro ao converter o valor: $GameData.money", e)
+                btn_pregos.isEnabled = true
             }
         }
     }
@@ -330,6 +346,32 @@ class GameActivity : AppCompatActivity() {
         var pregos_upgrades: Boolean = true
         var value_pregos: Int = 1
         var timeProductionPregos: Long = 2000L
+        var achievementsId: Int = 0
+        var toolId: Int = 1
 
+    }
+
+    fun saveProgress() {
+        val progressDAO = ProgressDAO(this)
+        val progress = Progress(
+            GameData.money,
+            GameData.pregos_upgrades,
+            GameData.managers,
+            GameData.achievementsId,
+            GameData.toolId
+        )
+        progressDAO.saveOrUpdateProgress(progress)
+        Log.d("Progress", "Progresso salvo: $progress")
+    }
+
+    fun loadProgress() {
+        val progressDAO = ProgressDAO(this)
+        val progress = progressDAO.getProgress()
+        if (progress != null) {
+            GameData.money = progress.money
+            GameData.pregos_upgrades = progress.upgradeId
+            GameData.managers = progress.managerId
+        }
+        Log.d("Progress", "Progresso carregado: $progress")
     }
 }
