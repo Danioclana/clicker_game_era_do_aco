@@ -23,6 +23,7 @@ class GameActivity : AppCompatActivity() {
     private lateinit var txt_money_value: TextView
     private var valorCrecimento = 1.20
     private lateinit var btn_managers: ImageButton
+    private lateinit var btn_upgrades: ImageButton
     private lateinit var handler: Handler
     private lateinit var handlerPregos: Handler
 
@@ -31,11 +32,9 @@ class GameActivity : AppCompatActivity() {
     private lateinit var txt_money_per_second_pregos: TextView
     private lateinit var progressbarPregos: ProgressBar
     private lateinit var btn_pregos: ImageButton
-    private var value_pregos = 1
     private lateinit var btn_buy_pregos: FrameLayout
     private lateinit var btn_buy_pregos_txt: TextView
     private lateinit var animator_progressbarPregos: ObjectAnimator
-    private var timeProductionPregos = 2000L
 
 
     private lateinit var btn_hide_ferraduras: FrameLayout
@@ -63,6 +62,7 @@ class GameActivity : AppCompatActivity() {
 
         txt_money_value = findViewById(R.id.txt_money_value)
         btn_managers = findViewById(R.id.btn_managers)
+        btn_upgrades = findViewById(R.id.btn_upgrades)
         handler = Handler(Looper.getMainLooper())
         handlerPregos = Handler(Looper.getMainLooper())
 
@@ -87,12 +87,20 @@ class GameActivity : AppCompatActivity() {
 
 
         txt_money_value.text = formatarValor(GameData.money)
-        animator_progressbarPregos.duration = timeProductionPregos
+        animator_progressbarPregos.duration = GameData.timeProductionPregos
         animator_progressbarPregos.interpolator = android.view.animation.AccelerateDecelerateInterpolator()
 
         startManagers(GameData.managers)
 
+        val sharedPref = getSharedPreferences("UPGRADE_PREFS", MODE_PRIVATE)
+        sharedPref.edit().putBoolean("PREGOS_VISIBLE", true).apply()
+        sharedPref.edit().putBoolean("FERRADURAS_VISIBLE", false).apply()
+        sharedPref.edit().putBoolean("ADAGAS_VISIBLE", false).apply()
+
+
+
         btn_pregos.setOnClickListener {
+
             btn_pregos.isEnabled = false
 
             var txt_money_per_second_pregos_aux = txt_money_per_second_pregos.text.toString()
@@ -106,7 +114,7 @@ class GameActivity : AppCompatActivity() {
                 .toInt()
 
             try {
-                GameData.money += value_pregos
+                GameData.money += GameData.value_pregos
 
 
 
@@ -146,7 +154,7 @@ class GameActivity : AppCompatActivity() {
 
             if (GameData.money >= btnPriceValue) {
                 txt_amount_pregos.text = (txt_amount_pregos.text.toString().toInt() + 1).toString()
-                value_pregos = calcularProducao(value_pregos, txt_amount_pregos.text.toString().toInt(), valorCrecimento)
+                GameData.value_pregos = calcularProducao(GameData.value_pregos, txt_amount_pregos.text.toString().toInt(), valorCrecimento)
                 val novoValor = calcularCusto(btnPriceValue, txt_amount_pregos.text.toString().toInt(), valorCrecimento)
                 btn_buy_pregos_txt.text = formatarValor(novoValor)
                 GameData.money -= btnPriceValue
@@ -178,6 +186,10 @@ class GameActivity : AppCompatActivity() {
             startActivity(Intent(this, ManagerActivity::class.java))
         }
 
+        btn_upgrades.setOnClickListener{
+            startActivity(Intent(this, UpgradeActivity::class.java))
+        }
+
 
 
     }
@@ -198,7 +210,7 @@ class GameActivity : AppCompatActivity() {
 
             try {
                 // Adiciona dinheiro de forma controlada
-                GameData.money += value_pregos
+                GameData.money += GameData.value_pregos
 
                 // Atualiza UI (na thread principal)
                 txt_money_value.post {
@@ -210,18 +222,18 @@ class GameActivity : AppCompatActivity() {
                 animator_progressbarPregos.cancel() // Cancela a animação anterior se houver
 
                 // Configura e inicia a animação da progress bar
-                animator_progressbarPregos.duration = timeProductionPregos
+                animator_progressbarPregos.duration = GameData.timeProductionPregos
                 animator_progressbarPregos.start()
 
                 animator_progressbarPregos.doOnEnd {
                     txt_money_value.text = formatarValor(GameData.money)
                     progressbarPregos.progress = 0
-                    txt_money_per_second_pregos.text = "${timeProductionPregos / 1000} s"
+                    txt_money_per_second_pregos.text = "${GameData.timeProductionPregos / 1000} s"
 
                     btn_pregos.isEnabled = true
 
                     // Agendar a próxima execução de forma segura
-                    handlerPregos.postDelayed({ iniciarAutoClickPregos() }, timeProductionPregos)
+                    handlerPregos.postDelayed({ iniciarAutoClickPregos() }, GameData.timeProductionPregos)
                 }
             } catch (e: NumberFormatException) {
                 Log.e("Error", "Erro ao converter o valor: $GameData.money", e)
@@ -309,5 +321,9 @@ class GameActivity : AppCompatActivity() {
     object GameData {
         var managers: Int = 0
         var money: Int = 0
+        var pregos_upgrades: Int = 0
+        var value_pregos: Int = 1
+        var timeProductionPregos: Long = 2000L
+
     }
 }
