@@ -11,6 +11,7 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.eradoaco.GameActivity.GameData
@@ -28,7 +29,7 @@ class ManagerActivity : AppCompatActivity() {
     private lateinit var btn_return: ImageButton
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var btn_game_config: ImageButton
-    private lateinit var menu_config: FrameLayout
+    private lateinit var menu_config: ConstraintLayout
     private lateinit var btn_upgrades: ImageButton
 
     override fun onCreate(savedInstanceState: Bundle?) {

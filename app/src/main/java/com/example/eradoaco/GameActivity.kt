@@ -14,6 +14,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -38,7 +39,7 @@ class GameActivity : AppCompatActivity() {
     private lateinit var handlerPregos: Handler
     private var autoClickPregosAtivo: Boolean = false
     private var autoClickJob: Job? = null
-    private lateinit var menu_config: FrameLayout
+    private lateinit var menu_config: ConstraintLayout
 
 
     private lateinit var txt_amount_pregos: TextView

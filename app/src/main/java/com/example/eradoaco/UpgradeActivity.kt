@@ -9,6 +9,7 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -25,10 +26,9 @@ class UpgradeActivity : AppCompatActivity() {
     private lateinit var adapter: UpgradeAdapter
     private lateinit var txt_money_value: TextView
     private val visibleUpgrades = mutableListOf<UpgradeItem>()
-    private lateinit var btn_voltar: ImageButton
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var btn_game_config: ImageButton
-    private lateinit var menu_config: View
+    private lateinit var menu_config: ConstraintLayout
     private lateinit var btn_managers: ImageButton
     private lateinit var btn_return: ImageButton
 
@@ -49,6 +49,7 @@ class UpgradeActivity : AppCompatActivity() {
         txt_money_value = findViewById(R.id.txt_money_value)
         btn_return = findViewById(R.id.btn_return)
         btn_managers = findViewById(R.id.btn_managers)
+        menu_config = findViewById(R.id.menu_config)
         recyclerView.layoutManager = LinearLayoutManager(this)
         btn_game_config = findViewById(R.id.btn_game_config)
 
@@ -64,6 +65,7 @@ class UpgradeActivity : AppCompatActivity() {
         }
 
         btn_return.setOnClickListener {
+            startActivity(Intent(this, GameActivity::class.java))
             menu_config.visibility = View.GONE
         }
 
@@ -72,10 +74,6 @@ class UpgradeActivity : AppCompatActivity() {
         }
 
         GameViewModel.GameManager.updateMoney(GameData.money)
-
-        btn_voltar.setOnClickListener {
-            startActivity(Intent(this, GameActivity::class.java))
-        }
 
         val upgrades = listOf(
             UpgradeItem("PREGOS", R.drawable.tool_prego, "Pregos de Qualidade\nAumenta o ganho em 2x", "$ 1"),
