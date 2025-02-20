@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ProgressBar
@@ -31,11 +32,13 @@ class GameActivity : AppCompatActivity() {
     private var valorCrecimento = 1.20
     private lateinit var btn_managers: ImageButton
     private lateinit var btn_upgrades: ImageButton
+    private lateinit var btn_return: ImageButton
     private lateinit var btn_game_config: ImageButton
     private lateinit var handler: Handler
     private lateinit var handlerPregos: Handler
     private var autoClickPregosAtivo: Boolean = false
     private var autoClickJob: Job? = null
+    private lateinit var menu_config: FrameLayout
 
 
     private lateinit var txt_amount_pregos: TextView
@@ -71,6 +74,8 @@ class GameActivity : AppCompatActivity() {
         txt_money_value = findViewById(R.id.txt_money_value)
         btn_managers = findViewById(R.id.btn_managers)
         btn_upgrades = findViewById(R.id.btn_upgrades)
+        menu_config = findViewById(R.id.menu_config)
+        btn_return = findViewById(R.id.btn_return)
         handler = Handler(Looper.getMainLooper())
         handlerPregos = Handler(Looper.getMainLooper())
         autoClickPregosAtivo = false
@@ -110,7 +115,21 @@ class GameActivity : AppCompatActivity() {
         }
 
         btn_game_config.setOnClickListener {
+            menu_config.visibility = View.VISIBLE
+        }
 
+        btn_managers.setOnClickListener {
+            startActivity(Intent(this, ManagerActivity::class.java))
+            menu_config.visibility = View.GONE
+        }
+
+        btn_upgrades.setOnClickListener {
+            startActivity(Intent(this, UpgradeActivity::class.java))
+            menu_config.visibility = View.GONE
+        }
+
+        btn_return.setOnClickListener {
+            menu_config.visibility = View.GONE
         }
 
         btn_pregos.setOnClickListener {

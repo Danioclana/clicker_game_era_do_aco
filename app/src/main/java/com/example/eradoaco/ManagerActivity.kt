@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.TextView
@@ -27,6 +28,8 @@ class ManagerActivity : AppCompatActivity() {
     private lateinit var btn_return: ImageButton
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var btn_game_config: ImageButton
+    private lateinit var menu_config: FrameLayout
+    private lateinit var btn_upgrades: ImageButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +49,8 @@ class ManagerActivity : AppCompatActivity() {
         txt_amount_managers = findViewById(R.id.txt_amount_managers)
         btn_return = findViewById(R.id.btn_return)
         btn_game_config = findViewById(R.id.btn_game_config)
+        menu_config = findViewById(R.id.menu_config)
+        btn_upgrades = findViewById(R.id.btn_upgrades)
 
         carregarDados()
 
@@ -56,7 +61,16 @@ class ManagerActivity : AppCompatActivity() {
         }
 
         btn_game_config.setOnClickListener {
+            menu_config.visibility = View.VISIBLE
+        }
 
+        btn_upgrades.setOnClickListener {
+            startActivity(Intent(this, UpgradeActivity::class.java))
+            menu_config.visibility = View.GONE
+        }
+
+        btn_return.setOnClickListener {
+            menu_config.visibility = View.GONE
         }
 
         GameViewModel.GameManager.updateMoney(GameData.money)
