@@ -15,7 +15,7 @@ import com.example.eradoaco.models.UpgradeItem
 
 class UpgradeAdapter(
     private var upgradeList: MutableList<UpgradeItem>,
-    private val onItemClick: (UpgradeItem) -> Unit // Callback para cliques
+    private val onUpgradePurchased: (UpgradeItem) -> Unit
 ) : RecyclerView.Adapter<UpgradeAdapter.UpgradeViewHolder>() {
 
     class UpgradeViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -23,7 +23,6 @@ class UpgradeAdapter(
         val img_banner_upgrade: TextView = view.findViewById(R.id.img_banner_upgrade)
         val btn_upgrade_txt: TextView = view.findViewById(R.id.btn_upgrade_txt)
         val btn_upgrade: FrameLayout = view.findViewById(R.id.btn_upgrade)
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UpgradeViewHolder {
@@ -37,32 +36,30 @@ class UpgradeAdapter(
         holder.img_pregos_upgrade.setImageResource(upgrade.imageResId)
         holder.img_banner_upgrade.text = upgrade.description
 
-        // Pegando o preço do upgrade e convertendo para Int
-        val upgradePrice = upgrade.price
-            .replace("$", "")
-            .trim()
-            .toIntOrNull() ?: 0
+        val upgradePrice = upgrade.price.replace("$", "").trim().toIntOrNull() ?: 0
         holder.btn_upgrade_txt.text = upgrade.price
 
-        // Verifica se o dinheiro é suficiente para comprar
-        val isAffordable = GameActivity.GameData.money >= upgradePrice
-
-        // Atualiza a aparência do botão (opaco se não tiver dinheiro)
+        val isAffordable = GameData.money >= upgradePrice
         holder.btn_upgrade.alpha = if (isAffordable) 1.0f else 0.5f
         holder.btn_upgrade.isClickable = isAffordable
 
-        // Clique no botão de compra
         holder.btn_upgrade.setOnClickListener {
             if (isAffordable) {
-                GameViewModel.GameManager.updateMoney(GameData.money - upgradePrice) // Deduz o dinheiro
+                GameViewModel.GameManager.updateMoney(GameData.money - upgradePrice)
 
-                if (upgrade.id == "PREGOS") {
-                    GameActivity.GameData.value_pregos *= 2 // Multiplica o valor de pregos
+                when (upgrade.id) {
+                    "PREGOS" -> GameData.value_pregos *= 2
+                    "PREGOS_2" -> GameData.timeProductionPregos /= 2
+                    //"FERRADURAS" -> GameData.value_ferraduras *= 2
+                    //"FERRADURAS_2" -> GameData.timeProductionFerraduras /= 2
+                    //"ADAGAS" -> GameData.value_adagas *= 2
+                    //"ADAGAS_2" -> GameData.timeProductionAdagas /= 2
                 }
 
-                // Remove o item comprado da lista
+                onUpgradePurchased(upgrade) // Salva nos SharedPreferences
+
                 upgradeList.removeAt(position)
-                notifyDataSetChanged() // Atualiza a RecyclerView
+                notifyDataSetChanged()
             }
         }
     }

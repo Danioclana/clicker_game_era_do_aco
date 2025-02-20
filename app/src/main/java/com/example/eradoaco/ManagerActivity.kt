@@ -1,6 +1,8 @@
 package com.example.eradoaco
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.widget.FrameLayout
@@ -21,6 +23,8 @@ class ManagerActivity : AppCompatActivity() {
     private lateinit var btn_buy_managers_txt: TextView
     private lateinit var txt_amount_managers: TextView
     private lateinit var btn_return: ImageButton
+    private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var btn_game_config: ImageButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,12 +36,16 @@ class ManagerActivity : AppCompatActivity() {
             insets
         }
 
+        sharedPreferences = getSharedPreferences("GameData", Context.MODE_PRIVATE)
+
         txt_money_value = findViewById(R.id.txt_money_value)
         btn_buy_managers = findViewById(R.id.btn_buy_managers)
         btn_buy_managers_txt = findViewById(R.id.btn_buy_managers_txt)
         txt_amount_managers = findViewById(R.id.txt_amount_managers)
         btn_return = findViewById(R.id.btn_return)
+        btn_game_config = findViewById(R.id.btn_game_config)
 
+        carregarDados()
 
         txt_money_value.text = formatarValor(GameData.money)
 
@@ -45,26 +53,30 @@ class ManagerActivity : AppCompatActivity() {
             txt_money_value.text = formatarValor(newMoney)
         }
 
+        btn_game_config.setOnClickListener {
+
+        }
+
         GameViewModel.GameManager.updateMoney(GameData.money)
 
-
-
         btn_buy_managers.setOnClickListener {
-
-            var managerPrice = btn_buy_managers_txt.text.toString()
+            GameData.next_manager_price = btn_buy_managers_txt.text.toString()
                 .replace("$", "")
                 .trim()
                 .toInt()
 
-            if (GameData.money >= managerPrice) {
-                GameData.money -= managerPrice
-                managerPrice *= 1000
+            if (GameData.money >= GameData.next_manager_price) {
+                GameData.money -= GameData.next_manager_price
+                GameData.next_manager_price *= 1000
                 GameData.managers += 1
+
                 txt_amount_managers.text = GameData.managers.toString()
-                btn_buy_managers_txt.text = GameActivity.formatarValor(managerPrice)
+                btn_buy_managers_txt.text = GameActivity.formatarValor(GameData.next_manager_price)
                 txt_money_value.text = GameActivity.formatarValor(GameData.money)
-            }
-            else {
+
+                // Salva os dados sempre que houver uma compra
+                salvarDados()
+            } else {
                 Log.e("ManagerActivity", "Not enough money")
             }
         }
@@ -72,8 +84,6 @@ class ManagerActivity : AppCompatActivity() {
         btn_return.setOnClickListener {
             startActivity(Intent(this, GameActivity::class.java))
         }
-
-
     }
 
     override fun onDestroy() {
@@ -83,4 +93,18 @@ class ManagerActivity : AppCompatActivity() {
         }
     }
 
+    private fun salvarDados() {
+        val editor = sharedPreferences.edit()
+        editor.putInt("money", GameData.next_manager_price)
+        editor.putInt("managers", GameData.managers)
+        editor.apply()
+    }
+
+    private fun carregarDados() {
+        GameData.next_manager_price = sharedPreferences.getInt("money", GameData.next_manager_price)
+        GameData.managers = sharedPreferences.getInt("managers", GameData.managers)
+
+        btn_buy_managers_txt.text = formatarValor(GameData.next_manager_price)
+        txt_amount_managers.text = GameData.managers.toString()
+    }
 }

@@ -33,6 +33,7 @@ class GameActivity : AppCompatActivity() {
     private var valorCrecimento = 1.20
     private lateinit var btn_managers: ImageButton
     private lateinit var btn_upgrades: ImageButton
+    private lateinit var btn_game_config: ImageButton
     private lateinit var handler: Handler
     private lateinit var handlerPregos: Handler
     private var autoClickPregosAtivo: Boolean = false
@@ -76,6 +77,7 @@ class GameActivity : AppCompatActivity() {
         handler = Handler(Looper.getMainLooper())
         handlerPregos = Handler(Looper.getMainLooper())
         autoClickPregosAtivo = false
+        btn_game_config = findViewById(R.id.btn_game_config)
 
         txt_amount_pregos = findViewById(R.id.txt_amount_pregos)
         txt_money_per_second_pregos = findViewById(R.id.txt_money_per_second_pregos)
@@ -96,17 +98,20 @@ class GameActivity : AppCompatActivity() {
         btn_buy_ferraduras = findViewById(R.id.btn_buy_ferraduras)
         btn_buy_ferraduras_txt = findViewById(R.id.btn_buy_ferraduras_txt)
 
-        loadProgress()
 
         txt_money_value.text = formatarValor(GameData.money)
         animator_progressbarPregos.duration = GameData.timeProductionPregos
         animator_progressbarPregos.interpolator = android.view.animation.AccelerateDecelerateInterpolator()
 
         startManagers(GameData.managers)
-            GameViewModel.GameManager.registerMoneyListener { newMoney ->
+
+        GameViewModel.GameManager.registerMoneyListener { newMoney ->
             txt_money_value.text = formatarValor(newMoney)
         }
 
+        btn_game_config.setOnClickListener {
+
+        }
 
         btn_pregos.setOnClickListener {
 
@@ -203,7 +208,6 @@ class GameActivity : AppCompatActivity() {
     }
 
 
-
     fun iniciarAutoClickPregos() {
         if (GameData.managers != 1) {
             Log.e("Error", "Erro: manager não comprado, valor: ${GameData.managers}")
@@ -244,6 +248,8 @@ class GameActivity : AppCompatActivity() {
     }
 
     fun startManagers(managers: Int) {
+
+        GameViewModel.GameManager.updateMoney(GameData.money)
 
         if (managers > 0) {
             handler.postDelayed({
@@ -328,10 +334,13 @@ class GameActivity : AppCompatActivity() {
         var managers: Int = 0
         var money: Int = 0
         var pregos_upgrades: Boolean = true
+        var ferraduras_upgrades: Boolean = false
+        var adagas_upgrades: Boolean = false
         var value_pregos: Int = 1
         var timeProductionPregos: Long = 2000L
         var achievementsId: Int = 0
         var toolId: Int = 1
+        var next_manager_price: Int = 1
 
     }
 
