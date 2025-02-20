@@ -1,9 +1,8 @@
 package com.example.eradoaco
 
 import android.animation.ObjectAnimator
-import android.app.GameManager
+import android.content.Context
 import android.content.Intent
-import android.icu.text.DecimalFormat
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -17,7 +16,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.example.eradoaco.UpgradeActivity
 import com.example.eradoaco.models.GameViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -70,7 +68,6 @@ class GameActivity : AppCompatActivity() {
             insets
         }
 
-
         txt_money_value = findViewById(R.id.txt_money_value)
         btn_managers = findViewById(R.id.btn_managers)
         btn_upgrades = findViewById(R.id.btn_upgrades)
@@ -86,7 +83,6 @@ class GameActivity : AppCompatActivity() {
         btn_buy_pregos = findViewById(R.id.btn_buy_pregos)
         btn_buy_pregos_txt = findViewById(R.id.btn_buy_pregos_txt)
 
-        // Inicializa o animador da progress bar corretamente
         animator_progressbarPregos = ObjectAnimator.ofInt(progressbarPregos, "progress", 0, 100)
 
         btn_hide_ferraduras = findViewById(R.id.btn_hide_ferraduras)
@@ -98,6 +94,10 @@ class GameActivity : AppCompatActivity() {
         btn_buy_ferraduras = findViewById(R.id.btn_buy_ferraduras)
         btn_buy_ferraduras_txt = findViewById(R.id.btn_buy_ferraduras_txt)
 
+        ProgressHelper.loadProgress(this)
+        if (GameData.managers > 0) {
+            iniciarAutoClickPregos()
+        }
 
         txt_money_value.text = formatarValor(GameData.money)
         animator_progressbarPregos.duration = GameData.timeProductionPregos
@@ -141,7 +141,7 @@ class GameActivity : AppCompatActivity() {
                     btn_pregos.isEnabled = true
                 }
 
-                saveProgress()
+                ProgressHelper.saveProgress(this)
 
             } catch (e: NumberFormatException) {
                 Log.e("Error", "Erro ao converter o valor: $GameData.money", e)
@@ -203,13 +203,11 @@ class GameActivity : AppCompatActivity() {
             startActivity(Intent(this, UpgradeActivity::class.java))
         }
 
-
-
     }
 
 
     fun iniciarAutoClickPregos() {
-        if (GameData.managers != 1) {
+        if (GameData.managers < 1) {
             Log.e("Error", "Erro: manager não comprado, valor: ${GameData.managers}")
             return
         }
@@ -222,13 +220,12 @@ class GameActivity : AppCompatActivity() {
         autoClickPregosAtivo = true
         btn_pregos.isEnabled = false
 
-        // Cancela qualquer loop anterior antes de iniciar um novo
         autoClickJob?.cancel()
 
         autoClickJob = CoroutineScope(Dispatchers.Main).launch {
             while (autoClickPregosAtivo) {
-                progressbarPregos.progress = 0  // Reset para garantir que a barra reinicie
-                animator_progressbarPregos.cancel()  // Cancela qualquer animação anterior
+                progressbarPregos.progress = 0
+                animator_progressbarPregos.cancel()
                 animator_progressbarPregos.duration = GameData.timeProductionPregos
                 animator_progressbarPregos.start()
 
@@ -236,10 +233,10 @@ class GameActivity : AppCompatActivity() {
                     btn_pregos.isEnabled = true
                 }
 
-                delay(GameData.timeProductionPregos)  // Espera o tempo de produção
-
+                delay(GameData.timeProductionPregos)
                 GameData.money += GameData.value_pregos
                 GameViewModel.GameManager.updateMoney(GameData.money)
+                ProgressHelper.saveProgress(this@GameActivity)
 
                 txt_money_value.text = formatarValor(GameData.money)
                 txt_money_per_second_pregos.text = "${GameData.timeProductionPregos / 1000} s"
@@ -256,6 +253,7 @@ class GameActivity : AppCompatActivity() {
                 iniciarAutoClickPregos()
             }, 1000)
         }
+
     }
 
     fun calcularCusto(baseCusto: Int, quantidade: Int, fatorCrescimento: Double): Int {
@@ -277,7 +275,6 @@ class GameActivity : AppCompatActivity() {
             txt_money_value.text = formatarValor(newMoney)
         }
     }
-
 
     companion object {
         fun formatarValor(valor: Int): String {
@@ -333,6 +330,7 @@ class GameActivity : AppCompatActivity() {
     object GameData {
         var managers: Int = 0
         var money: Int = 0
+        var upgrades: Int = 0
         var pregos_upgrades: Boolean = true
         var ferraduras_upgrades: Boolean = false
         var adagas_upgrades: Boolean = false
@@ -341,29 +339,30 @@ class GameActivity : AppCompatActivity() {
         var achievementsId: Int = 0
         var toolId: Int = 1
         var next_manager_price: Int = 1
-
     }
 
-    fun saveProgress() {
-        val progressDAO = ProgressDAO(this)
-        val progress = Progress(
-            GameData.money,
-            1,
-            GameData.managers,
-            GameData.achievementsId,
-            GameData.toolId
-        )
-        progressDAO.saveOrUpdateProgress(progress)
-        Log.d("Progress", "Progresso salvo: $progress")
-    }
-
-    fun loadProgress() {
-        val progressDAO = ProgressDAO(this)
-        val progress = progressDAO.getProgress()
-        if (progress != null) {
-            GameData.money = progress.money
-            GameData.managers = progress.managerId
+    object ProgressHelper {
+        fun saveProgress(context: Context) {
+            val progressDAO = ProgressDAO(context)
+            val progress = Progress(
+                GameActivity.GameData.money,
+                GameActivity.GameData.upgrades,
+                GameActivity.GameData.managers,
+                GameActivity.GameData.achievementsId,
+                GameActivity.GameData.toolId
+            )
+            progressDAO.saveOrUpdateProgress(progress)
+            Log.d("Progress", "Progresso salvo: $progress")
         }
-        Log.d("Progress", "Progresso carregado: $progress")
+
+        fun loadProgress(context: Context) {
+            val progressDAO = ProgressDAO(context)
+            val progress = progressDAO.getProgress()
+            if (progress != null) {
+                GameActivity.GameData.money = progress.money
+                GameActivity.GameData.managers = progress.managerId
+            }
+            Log.d("Progress", "Progresso carregado: $progress")
+        }
     }
 }

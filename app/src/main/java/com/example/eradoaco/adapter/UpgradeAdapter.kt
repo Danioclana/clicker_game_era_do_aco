@@ -56,7 +56,7 @@ class UpgradeAdapter(
                     //"ADAGAS_2" -> GameData.timeProductionAdagas /= 2
                 }
 
-                onUpgradePurchased(upgrade) // Salva nos SharedPreferences
+                GameActivity.ProgressHelper.saveProgress(holder.itemView.context)
 
                 upgradeList.removeAt(position)
                 notifyDataSetChanged()

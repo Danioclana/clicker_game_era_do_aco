@@ -72,11 +72,23 @@ class UpgradeActivity : AppCompatActivity() {
             UpgradeItem("ADAGAS_2", R.drawable.tool_adaga, "Adaga arremessáveis\nReduz tempo de produção pela metade", "$ 20000")
         )
 
-        val purchasedUpgrades = loadPurchasedUpgrades()
+        carregarDados()
 
-        visibleUpgrades.addAll(upgrades.filter { upgrade -> !purchasedUpgrades.contains(upgrade.id) })
+        visibleUpgrades.addAll(upgrades.filter { upgrade ->
+            when (upgrade.id) {
+                "PREGOS" -> GameData.pregos_upgrades
+                "PREGOS_2" -> GameData.pregos_upgrades
+                "FERRADURAS" -> GameData.ferraduras_upgrades
+                "FERRADURAS_2" -> GameData.ferraduras_upgrades
+                "ADAGAS" -> GameData.adagas_upgrades
+                "ADAGAS_2" -> GameData.adagas_upgrades
+                else -> false
+            }
+        })
 
-        adapter = UpgradeAdapter(visibleUpgrades, ::onUpgradePurchased)
+        adapter = UpgradeAdapter(visibleUpgrades) { selectedUpgrade ->
+
+        }
 
         recyclerView.adapter = adapter
     }
@@ -88,19 +100,11 @@ class UpgradeActivity : AppCompatActivity() {
         }
     }
 
-    private fun onUpgradePurchased(upgrade: UpgradeItem) {
-        val purchasedUpgrades = loadPurchasedUpgrades().toMutableSet()
-        purchasedUpgrades.add(upgrade.id)
-        savePurchasedUpgrades(purchasedUpgrades)
+    private fun salvarDados() {
+        GameActivity.ProgressHelper.saveProgress(this)
     }
 
-    private fun savePurchasedUpgrades(upgrades: Set<String>) {
-        val editor = sharedPreferences.edit()
-        editor.putStringSet("purchasedUpgrades", upgrades)
-        editor.apply()
-    }
-
-    private fun loadPurchasedUpgrades(): Set<String> {
-        return sharedPreferences.getStringSet("purchasedUpgrades", emptySet()) ?: emptySet()
+    private fun carregarDados() {
+        GameActivity.ProgressHelper.loadProgress(this)
     }
 }

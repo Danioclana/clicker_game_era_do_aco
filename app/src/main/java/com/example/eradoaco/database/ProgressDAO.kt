@@ -3,6 +3,7 @@ package com.example.eradoaco.database
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
+import com.example.eradoaco.GameActivity
 import com.example.eradoaco.models.Progress
 
 class ProgressDAO(context: Context) {

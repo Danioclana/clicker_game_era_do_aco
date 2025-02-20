@@ -14,7 +14,9 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.eradoaco.GameActivity.GameData
 import com.example.eradoaco.models.GameViewModel
+import kotlin.math.pow
 import com.example.eradoaco.GameActivity.Companion.formatarValor
+import java.lang.Math.*
 
 class ManagerActivity : AppCompatActivity() {
 
@@ -67,14 +69,12 @@ class ManagerActivity : AppCompatActivity() {
 
             if (GameData.money >= GameData.next_manager_price) {
                 GameData.money -= GameData.next_manager_price
-                GameData.next_manager_price *= 1000
                 GameData.managers += 1
 
                 txt_amount_managers.text = GameData.managers.toString()
                 btn_buy_managers_txt.text = GameActivity.formatarValor(GameData.next_manager_price)
                 txt_money_value.text = GameActivity.formatarValor(GameData.money)
 
-                // Salva os dados sempre que houver uma compra
                 salvarDados()
             } else {
                 Log.e("ManagerActivity", "Not enough money")
@@ -94,17 +94,15 @@ class ManagerActivity : AppCompatActivity() {
     }
 
     private fun salvarDados() {
-        val editor = sharedPreferences.edit()
-        editor.putInt("money", GameData.next_manager_price)
-        editor.putInt("managers", GameData.managers)
-        editor.apply()
+        GameActivity.ProgressHelper.saveProgress(this)
     }
 
     private fun carregarDados() {
-        GameData.next_manager_price = sharedPreferences.getInt("money", GameData.next_manager_price)
-        GameData.managers = sharedPreferences.getInt("managers", GameData.managers)
+        GameActivity.ProgressHelper.loadProgress(this)
 
-        btn_buy_managers_txt.text = formatarValor(GameData.next_manager_price)
         txt_amount_managers.text = GameData.managers.toString()
+        GameData.next_manager_price = 1000.0.pow(GameData.managers.toDouble()+1).toInt()
+        btn_buy_managers_txt.text = GameActivity.formatarValor(GameData.next_manager_price)
+        txt_money_value.text = GameActivity.formatarValor(GameData.money)
     }
 }
