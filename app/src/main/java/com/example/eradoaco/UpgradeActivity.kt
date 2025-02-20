@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
@@ -27,6 +28,9 @@ class UpgradeActivity : AppCompatActivity() {
     private lateinit var btn_voltar: ImageButton
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var btn_game_config: ImageButton
+    private lateinit var menu_config: View
+    private lateinit var btn_managers: ImageButton
+    private lateinit var btn_return: ImageButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,14 +47,24 @@ class UpgradeActivity : AppCompatActivity() {
 
         recyclerView = findViewById(R.id.recycler_view_upgrades)
         txt_money_value = findViewById(R.id.txt_money_value)
-        btn_voltar = findViewById(R.id.btn_voltar)
+        btn_return = findViewById(R.id.btn_return)
+        btn_managers = findViewById(R.id.btn_managers)
         recyclerView.layoutManager = LinearLayoutManager(this)
         btn_game_config = findViewById(R.id.btn_game_config)
 
         txt_money_value.text = formatarValor(GameData.money)
 
         btn_game_config.setOnClickListener {
+            menu_config.visibility = View.VISIBLE
+        }
 
+        btn_managers.setOnClickListener {
+            startActivity(Intent(this, ManagerActivity::class.java))
+            menu_config.visibility = View.GONE
+        }
+
+        btn_return.setOnClickListener {
+            menu_config.visibility = View.GONE
         }
 
         GameViewModel.GameManager.registerMoneyListener { newMoney ->
