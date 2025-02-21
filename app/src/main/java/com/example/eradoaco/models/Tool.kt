@@ -2,11 +2,10 @@ package com.example.eradoaco.models
 
 data class Tool(
     val id: Int,
-    val name: ToolName,
-    val amount: Int
+    val tempoProducao: Int,
+    val valorProxCompra: Int,
+    val quatidade: Int,
 )
 {
-    constructor(id: Int, name: String, progress: Int) :
-            this(id, ToolName.fromString(name) ?: throw IllegalArgumentException("Ferramenta inválida: $name"), progress)
+    constructor(id: Int, tempoProducao: Int, valorProxCompra: Int) : this(id, tempoProducao, valorProxCompra, 0)
 }
-

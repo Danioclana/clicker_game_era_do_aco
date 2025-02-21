@@ -14,8 +14,9 @@ class ToolDAO(context: Context) {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put("ID", tool.id)
-            put("NAME", tool.name.name)
-            put("AMOUNT", tool.amount)
+            put("tempoProducao", tool.tempoProducao)
+            put("valorProxCompra", tool.valorProxCompra)
+            put("quatidade", tool.quatidade)
         }
         db.insert("CLASS_TOOL", null, values)
         db.close()
@@ -27,14 +28,12 @@ class ToolDAO(context: Context) {
         val tools = mutableListOf<Tool>()
 
         while (cursor.moveToNext()) {
-            val toolNameString = cursor.getString(cursor.getColumnIndexOrThrow("NAME"))
-            val toolName = ToolName.fromString(toolNameString) ?: ToolName.PREGO
-
             tools.add(
                 Tool(
                     cursor.getInt(cursor.getColumnIndexOrThrow("ID")),
-                    toolName,
-                    cursor.getInt(cursor.getColumnIndexOrThrow("AMOUNT"))
+                    cursor.getInt(cursor.getColumnIndexOrThrow("tempoProducao")),
+                    cursor.getInt(cursor.getColumnIndexOrThrow("valorProxCompra")),
+                    cursor.getInt(cursor.getColumnIndexOrThrow("quatidade"))
                 )
             )
         }

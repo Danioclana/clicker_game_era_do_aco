@@ -56,13 +56,14 @@ class UpgradeAdapter(
                     //"ADAGAS_2" -> GameData.timeProductionAdagas /= 2
                 }
 
+                upgradeList.removeAt(position)
+
                 GameActivity.ProgressHelper.saveProgress(holder.itemView.context)
 
-                upgradeList.removeAt(position)
                 notifyDataSetChanged()
             }
         }
     }
-
+    
     override fun getItemCount() = upgradeList.size
 }

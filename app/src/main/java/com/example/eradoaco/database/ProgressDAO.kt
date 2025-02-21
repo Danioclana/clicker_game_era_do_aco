@@ -32,7 +32,7 @@ class ProgressDAO(context: Context) {
         val cursor: Cursor = db.rawQuery("SELECT * FROM PROGRESS LIMIT 1", null)
 
         var progress: Progress? = null
-        cursor.use { // Isso garante que o cursor será fechado automaticamente
+        cursor.use {
             if (it.moveToFirst()) {
                 progress = Progress(
                     it.getInt(it.getColumnIndexOrThrow("MONEY")),
