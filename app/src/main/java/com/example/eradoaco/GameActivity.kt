@@ -38,6 +38,7 @@ class GameActivity : AppCompatActivity() {
     private lateinit var handler: Handler
     private lateinit var handlerPregos: Handler
     private var autoClickPregosAtivo: Boolean = false
+    private var autoClickFerradurasAtivo: Boolean = false
     private var autoClickJob: Job? = null
     private lateinit var menu_config: ConstraintLayout
 
@@ -56,11 +57,9 @@ class GameActivity : AppCompatActivity() {
     private lateinit var txt_money_per_second_ferraduras: TextView
     private lateinit var progressbarFerraduras: ProgressBar
     private lateinit var btn_ferraduras: ImageButton
-    private var value_ferraduras = 1
     private lateinit var btn_buy_ferraduras: FrameLayout
     private lateinit var btn_buy_ferraduras_txt: TextView
     private lateinit var animator_progressbarFerraduras: ObjectAnimator
-    private var timeProductionFerraduras = 2000L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,6 +79,7 @@ class GameActivity : AppCompatActivity() {
         handler = Handler(Looper.getMainLooper())
         handlerPregos = Handler(Looper.getMainLooper())
         autoClickPregosAtivo = false
+        autoClickFerradurasAtivo = false
         btn_game_config = findViewById(R.id.btn_game_config)
 
         txt_amount_pregos = findViewById(R.id.txt_amount_pregos)
@@ -88,7 +88,6 @@ class GameActivity : AppCompatActivity() {
         btn_pregos = findViewById(R.id.btn_pregos)
         btn_buy_pregos = findViewById(R.id.btn_buy_pregos)
         btn_buy_pregos_txt = findViewById(R.id.btn_buy_pregos_txt)
-
         animator_progressbarPregos = ObjectAnimator.ofInt(progressbarPregos, "progress", 0, 100)
 
         btn_hide_ferraduras = findViewById(R.id.btn_hide_ferraduras)
@@ -99,6 +98,8 @@ class GameActivity : AppCompatActivity() {
         btn_ferraduras = findViewById(R.id.btn_ferraduras)
         btn_buy_ferraduras = findViewById(R.id.btn_buy_ferraduras)
         btn_buy_ferraduras_txt = findViewById(R.id.btn_buy_ferraduras_txt)
+        animator_progressbarFerraduras = ObjectAnimator.ofInt(progressbarFerraduras, "progress", 0, 100)
+
 
         ProgressHelper.loadProgress(this)
         if (GameData.managers > 0) {
@@ -113,6 +114,14 @@ class GameActivity : AppCompatActivity() {
 
         GameViewModel.GameManager.registerMoneyListener { newMoney ->
             txt_money_value.text = formatarValor(newMoney)
+        }
+
+        btn_managers.setOnClickListener{
+            startActivity(Intent(this, ManagerActivity::class.java))
+        }
+
+        btn_upgrades.setOnClickListener{
+            startActivity(Intent(this, UpgradeActivity::class.java))
         }
 
         btn_game_config.setOnClickListener {
@@ -154,14 +163,15 @@ class GameActivity : AppCompatActivity() {
                 animator_progressbarPregos.doOnEnd {
                     txt_money_value.text = formatarValor(GameData.money)
                     progressbarPregos.progress = 2
-                    for (i in timeProductionFerraduras downTo 0 step 1000) {
+                    for (i in GameData.timeProductionPregos downTo 0 step 1000) {
                         txt_money_per_second_pregos.text = "" + (i/1000) + " s"
                     }
-                    txt_money_per_second_pregos.text = "" + (timeProductionFerraduras.toInt()/1000) + " s"
+                    txt_money_per_second_pregos.text = "" + (GameData.timeProductionPregos.toInt()/1000) + " s"
                     btn_pregos.isEnabled = true
                 }
 
                 ProgressHelper.saveProgress(this)
+                Log.d("ANIMATION", "Pregos: ${animator_progressbarPregos.duration}, Ferraduras: ${animator_progressbarFerraduras.duration}")
 
             } catch (e: NumberFormatException) {
                 Log.e("Error", "Erro ao converter o valor: $GameData.money", e)
@@ -215,13 +225,70 @@ class GameActivity : AppCompatActivity() {
             }
         }
 
-        btn_managers.setOnClickListener{
-            startActivity(Intent(this, ManagerActivity::class.java))
+        btn_ferraduras.setOnClickListener {
+
+            btn_ferraduras.isEnabled = false
+
+            var txt_money_per_second_ferraduras_aux = txt_money_per_second_ferraduras.text.toString()
+                .replace("s", "")
+                .trim()
+                .toInt()
+
+            GameData.money = txt_money_value.text.toString()
+                .replace("$", "")
+                .trim()
+                .toInt()
+
+            try {
+                GameData.money += GameData.value_ferraduras
+                animator_progressbarFerraduras.start()
+
+                animator_progressbarFerraduras.doOnEnd {
+                    txt_money_value.text = formatarValor(GameData.money)
+                    progressbarFerraduras.progress = 2
+                    for (i in GameData.timeProductionFerraduras downTo 0 step 1000) {
+                        txt_money_per_second_ferraduras.text = "" + (i/1000) + " s"
+                    }
+                    txt_money_per_second_ferraduras.text = "" + (GameData.timeProductionFerraduras.toInt()/1000) + " s"
+                    btn_ferraduras.isEnabled = true
+                }
+
+                ProgressHelper.saveProgress(this)
+                Log.d("ANIMATION", "Pregos: ${animator_progressbarPregos.duration}, Ferraduras: ${animator_progressbarFerraduras.duration}")
+
+            } catch (e: NumberFormatException) {
+                Log.e("Error", "Erro ao converter o valor: $GameData.money", e)
+                btn_ferraduras.isEnabled = true
+            }
         }
 
-        btn_upgrades.setOnClickListener{
-            startActivity(Intent(this, UpgradeActivity::class.java))
+        btn_buy_ferraduras.setOnClickListener {
+
+            GameData.money = txt_money_value.text.toString()
+                .replace("$", "")
+                .trim()
+                .toInt()
+
+            val btnPriceValue = btn_buy_ferraduras_txt.text.toString()
+                .replace("$", "")
+                .trim()
+                .toInt()
+
+
+            Log.e("Error", "Erro ao converter o valor: $GameData.money")
+            Log.e("Error", "Erro ao converter o valor: $btnPriceValue")
+
+            if (GameData.money >= btnPriceValue) {
+                txt_amount_ferraduras.text = (txt_amount_ferraduras.text.toString().toInt() + 1).toString()
+                GameData.value_ferraduras = calcularProducao(GameData.value_ferraduras, txt_amount_ferraduras.text.toString().toInt(), valorCrecimento)
+                val novoValor = calcularCusto(btnPriceValue, txt_amount_ferraduras.text.toString().toInt(), valorCrecimento)
+                btn_buy_ferraduras_txt.text = formatarValor(novoValor)
+                GameViewModel.GameManager.updateMoney(GameData.money - btnPriceValue)
+                txt_money_value.text = formatarValor(GameData.money)
+            }
         }
+
+
 
     }
 
@@ -264,6 +331,44 @@ class GameActivity : AppCompatActivity() {
         }
     }
 
+    fun iniciarAutoClickFerraduras() {
+        if (GameData.managers < 1) {
+            Log.e("Error", "Erro: manager não comprado, valor: ${GameData.managers}")
+            return
+        }
+
+        if (autoClickFerradurasAtivo) {
+            Log.w("AutoClick", "Já existe um auto-click em andamento!")
+            return
+        }
+
+        autoClickFerradurasAtivo = true
+        btn_ferraduras.isEnabled = false
+
+        autoClickJob?.cancel()
+
+        autoClickJob = CoroutineScope(Dispatchers.Main).launch {
+            while (autoClickFerradurasAtivo) {
+                progressbarFerraduras.progress = 0
+                animator_progressbarFerraduras.cancel()
+                animator_progressbarFerraduras.duration = GameData.timeProductionFerraduras
+                animator_progressbarFerraduras.start()
+
+                animator_progressbarFerraduras.doOnEnd {
+                    btn_pregos.isEnabled = true
+                }
+
+                delay(GameData.timeProductionFerraduras)
+                GameData.money += GameData.value_ferraduras
+                GameViewModel.GameManager.updateMoney(GameData.money)
+                ProgressHelper.saveProgress(this@GameActivity)
+
+                txt_money_value.text = formatarValor(GameData.money)
+                txt_money_per_second_ferraduras.text = "${GameData.timeProductionFerraduras / 1000} s"
+            }
+        }
+    }
+
     fun startManagers(managers: Int) {
 
         GameViewModel.GameManager.updateMoney(GameData.money)
@@ -273,7 +378,11 @@ class GameActivity : AppCompatActivity() {
                 iniciarAutoClickPregos()
             }, 1000)
         }
-
+        if (managers > 1) {
+            handler.postDelayed({
+                iniciarAutoClickFerraduras()
+            }, 1000)
+        }
     }
 
     fun calcularCusto(baseCusto: Int, quantidade: Int, fatorCrescimento: Double): Int {
@@ -355,7 +464,9 @@ class GameActivity : AppCompatActivity() {
         var ferraduras_upgrades: Boolean = false
         var adagas_upgrades: Boolean = false
         var value_pregos: Int = 1
+        var value_ferraduras: Int = 1
         var timeProductionPregos: Long = 2000L
+        var timeProductionFerraduras: Long = 2000L
         var achievementsId: Int = 0
         var toolId: Int = 1
         var next_manager_price: Int = 1
