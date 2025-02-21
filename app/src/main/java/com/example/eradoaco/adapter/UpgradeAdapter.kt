@@ -50,20 +50,18 @@ class UpgradeAdapter(
                 when (upgrade.id) {
                     "PREGOS" -> GameData.value_pregos *= 2
                     "PREGOS_2" -> GameData.timeProductionPregos /= 2
-                    //"FERRADURAS" -> GameData.value_ferraduras *= 2
-                    //"FERRADURAS_2" -> GameData.timeProductionFerraduras /= 2
+                    "FERRADURAS" -> GameData.value_ferraduras *= 2
+                    "FERRADURAS_2" -> GameData.timeProductionFerraduras /= 2
                     //"ADAGAS" -> GameData.value_adagas *= 2
                     //"ADAGAS_2" -> GameData.timeProductionAdagas /= 2
                 }
 
                 upgradeList.removeAt(position)
 
-                GameActivity.ProgressHelper.saveProgress(holder.itemView.context)
-
                 notifyDataSetChanged()
             }
         }
     }
-    
+
     override fun getItemCount() = upgradeList.size
 }

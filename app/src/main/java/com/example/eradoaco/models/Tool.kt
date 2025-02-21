@@ -4,8 +4,8 @@ data class Tool(
     val id: Int,
     val tempoProducao: Int,
     val valorProxCompra: Int,
-    val quatidade: Int,
+    val quantidade: Int,
 )
 {
-    constructor(id: Int, tempoProducao: Int, valorProxCompra: Int) : this(id, tempoProducao, valorProxCompra, 0)
+    constructor(tempoProducao: Int, valorProxCompra: Int, quantidade: Int) : this(0, tempoProducao, valorProxCompra, quantidade)
 }

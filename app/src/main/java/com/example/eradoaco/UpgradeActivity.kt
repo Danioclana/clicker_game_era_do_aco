@@ -84,8 +84,6 @@ class UpgradeActivity : AppCompatActivity() {
             UpgradeItem("ADAGAS_2", R.drawable.tool_adaga, "Adaga arremessáveis\nReduz tempo de produção pela metade", "$ 20000")
         )
 
-        carregarDados()
-
         visibleUpgrades.addAll(upgrades.filter { upgrade ->
             when (upgrade.id) {
                 "PREGOS" -> GameData.pregos_upgrades
@@ -110,13 +108,5 @@ class UpgradeActivity : AppCompatActivity() {
         GameViewModel.GameManager.unregisterMoneyListener { newMoney ->
             txt_money_value.text = formatarValor(newMoney)
         }
-    }
-
-    private fun salvarDados() {
-        GameActivity.ProgressHelper.saveProgress(this)
-    }
-
-    private fun carregarDados() {
-        GameActivity.ProgressHelper.loadProgress(this)
     }
 }

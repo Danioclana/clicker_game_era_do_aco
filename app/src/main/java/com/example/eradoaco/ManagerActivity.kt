@@ -16,8 +16,9 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.eradoaco.GameActivity.GameData
 import com.example.eradoaco.models.GameViewModel
-import kotlin.math.pow
 import com.example.eradoaco.GameActivity.Companion.formatarValor
+import com.example.eradoaco.GameActivity.ProgressHelper
+import kotlin.math.pow
 import java.lang.Math.*
 
 class ManagerActivity : AppCompatActivity() {
@@ -31,6 +32,7 @@ class ManagerActivity : AppCompatActivity() {
     private lateinit var btn_game_config: ImageButton
     private lateinit var menu_config: ConstraintLayout
     private lateinit var btn_upgrades: ImageButton
+    private val MULTIPLICADOR_MANAGER_PRICE = 10.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,7 +55,7 @@ class ManagerActivity : AppCompatActivity() {
         menu_config = findViewById(R.id.menu_config)
         btn_upgrades = findViewById(R.id.btn_upgrades)
 
-        carregarDados()
+        updateManager()
 
         txt_money_value.text = formatarValor(GameData.money)
 
@@ -86,11 +88,13 @@ class ManagerActivity : AppCompatActivity() {
                 GameData.money -= GameData.next_manager_price
                 GameData.managers += 1
 
+                GameData.next_manager_price = 1000.0.pow(GameData.managers).toInt()
+
                 txt_amount_managers.text = GameData.managers.toString()
                 btn_buy_managers_txt.text = GameActivity.formatarValor(GameData.next_manager_price)
                 txt_money_value.text = GameActivity.formatarValor(GameData.money)
 
-                salvarDados()
+                ProgressHelper.saveProgress(this)
             } else {
                 Log.e("ManagerActivity", "Not enough money")
             }
@@ -101,23 +105,15 @@ class ManagerActivity : AppCompatActivity() {
         }
     }
 
+    fun updateManager() {
+        txt_amount_managers.text = GameData.managers.toString()
+        btn_buy_managers_txt.text = GameActivity.formatarValor(MULTIPLICADOR_MANAGER_PRICE.pow(GameData.managers+1).toInt())
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         GameViewModel.GameManager.unregisterMoneyListener { newMoney ->
             txt_money_value.text = formatarValor(newMoney)
         }
-    }
-
-    private fun salvarDados() {
-        GameActivity.ProgressHelper.saveProgress(this)
-    }
-
-    private fun carregarDados() {
-        GameActivity.ProgressHelper.loadProgress(this)
-
-        txt_amount_managers.text = GameData.managers.toString()
-        GameData.next_manager_price = 1000.0.pow(GameData.managers.toDouble()+1).toInt()
-        btn_buy_managers_txt.text = GameActivity.formatarValor(GameData.next_manager_price)
-        txt_money_value.text = GameActivity.formatarValor(GameData.money)
     }
 }

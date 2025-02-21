@@ -1,6 +1,7 @@
 package com.example.eradoaco
 
 import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -18,15 +19,20 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.eradoaco.database.ManagerDAO
+import com.example.eradoaco.database.MoneyDAO
 import com.example.eradoaco.models.GameViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import com.example.eradoaco.database.ProgressDAO
-import com.example.eradoaco.models.Progress
+import com.example.eradoaco.database.ToolDAO
+import com.example.eradoaco.models.Manager
+import com.example.eradoaco.models.Money
+import com.example.eradoaco.models.Tool
 
+@SuppressLint("SetTextI18n")
 class GameActivity : AppCompatActivity() {
 
     private lateinit var txt_money_value: TextView
@@ -41,7 +47,6 @@ class GameActivity : AppCompatActivity() {
     private var autoClickFerradurasAtivo: Boolean = false
     private var autoClickJob: Job? = null
     private lateinit var menu_config: ConstraintLayout
-
 
     private lateinit var txt_amount_pregos: TextView
     private lateinit var txt_money_per_second_pregos: TextView
@@ -100,17 +105,16 @@ class GameActivity : AppCompatActivity() {
         btn_buy_ferraduras_txt = findViewById(R.id.btn_buy_ferraduras_txt)
         animator_progressbarFerraduras = ObjectAnimator.ofInt(progressbarFerraduras, "progress", 0, 100)
 
-
         ProgressHelper.loadProgress(this)
-        if (GameData.managers > 0) {
-            iniciarAutoClickPregos()
-        }
+        updatePregos()
+        updateMoney()
+        updateManagers()
 
         txt_money_value.text = formatarValor(GameData.money)
         animator_progressbarPregos.duration = GameData.timeProductionPregos
         animator_progressbarPregos.interpolator = android.view.animation.AccelerateDecelerateInterpolator()
 
-        startManagers(GameData.managers)
+        GameViewModel.GameManager.updateMoney(GameData.money)
 
         GameViewModel.GameManager.registerMoneyListener { newMoney ->
             txt_money_value.text = formatarValor(newMoney)
@@ -146,7 +150,7 @@ class GameActivity : AppCompatActivity() {
 
             btn_pregos.isEnabled = false
 
-            var txt_money_per_second_pregos_aux = txt_money_per_second_pregos.text.toString()
+            txt_money_per_second_pregos.text.toString()
                 .replace("s", "")
                 .trim()
                 .toInt()
@@ -180,33 +184,32 @@ class GameActivity : AppCompatActivity() {
         }
 
         btn_buy_pregos.setOnClickListener {
-
             GameData.money = txt_money_value.text.toString()
                 .replace("$", "")
                 .trim()
                 .toInt()
 
-            val btnPriceValue = btn_buy_pregos_txt.text.toString()
+            GameData.valorProxCompraPrego = btn_buy_pregos_txt.text.toString()
                 .replace("$", "")
                 .trim()
                 .toInt()
 
-
-            Log.e("Error", "Erro ao converter o valor: $GameData.money")
-            Log.e("Error", "Erro ao converter o valor: $btnPriceValue")
-
-            if (GameData.money >= btnPriceValue) {
+            if (GameData.money >= GameData.valorProxCompraPrego) {
                 txt_amount_pregos.text = (txt_amount_pregos.text.toString().toInt() + 1).toString()
+                GameData.amount_pregos = txt_amount_pregos.text.toString().toInt()
                 GameData.value_pregos = calcularProducao(GameData.value_pregos, txt_amount_pregos.text.toString().toInt(), valorCrecimento)
-                val novoValor = calcularCusto(btnPriceValue, txt_amount_pregos.text.toString().toInt(), valorCrecimento)
+                val novoValor = calcularCusto(GameData.valorProxCompraPrego, txt_amount_pregos.text.toString().toInt(), valorCrecimento)
                 btn_buy_pregos_txt.text = formatarValor(novoValor)
-                GameViewModel.GameManager.updateMoney(GameData.money - btnPriceValue)
+                GameViewModel.GameManager.updateMoney(GameData.money - GameData.valorProxCompraPrego)
                 txt_money_value.text = formatarValor(GameData.money)
             }
+
+            ProgressHelper.saveProgress(this)
         }
 
         btn_hide_ferraduras.setOnClickListener {
-            var moneyValueBtnHideFerraduras = btn_hide_ferraduras_txt.text.toString()
+            GameData.ferraduras_upgrades = true
+            val moneyValueBtnHideFerraduras = btn_hide_ferraduras_txt.text.toString()
                 .replace("$", "")
                 .trim()
                 .toInt()
@@ -229,7 +232,7 @@ class GameActivity : AppCompatActivity() {
 
             btn_ferraduras.isEnabled = false
 
-            var txt_money_per_second_ferraduras_aux = txt_money_per_second_ferraduras.text.toString()
+            txt_money_per_second_ferraduras.text.toString()
                 .replace("s", "")
                 .trim()
                 .toInt()
@@ -287,11 +290,7 @@ class GameActivity : AppCompatActivity() {
                 txt_money_value.text = formatarValor(GameData.money)
             }
         }
-
-
-
     }
-
 
     fun iniciarAutoClickPregos() {
         if (GameData.managers < 1) {
@@ -361,27 +360,12 @@ class GameActivity : AppCompatActivity() {
                 delay(GameData.timeProductionFerraduras)
                 GameData.money += GameData.value_ferraduras
                 GameViewModel.GameManager.updateMoney(GameData.money)
+
                 ProgressHelper.saveProgress(this@GameActivity)
 
                 txt_money_value.text = formatarValor(GameData.money)
                 txt_money_per_second_ferraduras.text = "${GameData.timeProductionFerraduras / 1000} s"
             }
-        }
-    }
-
-    fun startManagers(managers: Int) {
-
-        GameViewModel.GameManager.updateMoney(GameData.money)
-
-        if (managers > 0) {
-            handler.postDelayed({
-                iniciarAutoClickPregos()
-            }, 1000)
-        }
-        if (managers > 1) {
-            handler.postDelayed({
-                iniciarAutoClickFerraduras()
-            }, 1000)
         }
     }
 
@@ -396,6 +380,29 @@ class GameActivity : AppCompatActivity() {
     fun calcularTempoFabricacao(tempoBase: Int, quantidade: Int): Int {
         val reducoes = quantidade / 50
         return tempoBase / Math.pow(2.0, reducoes.toDouble()).toInt().coerceAtLeast(1)
+    }
+
+    fun updatePregos() {
+        txt_amount_pregos.text = ("${GameData.amount_pregos}")
+        txt_money_per_second_pregos.text = "${GameData.timeProductionPregos / 1000} s"
+        btn_buy_pregos_txt.text = formatarValor(GameData.valorProxCompraPrego)
+    }
+
+    fun updateMoney() {
+        txt_money_value.text = formatarValor(GameData.money)
+    }
+
+    fun updateManagers() {
+        if (GameData.managers > 0) {
+            handler.postDelayed({
+                iniciarAutoClickPregos()
+            }, 1000)
+        }
+        if (GameData.managers > 1 && GameData.ferraduras_upgrades) {
+            handler.postDelayed({
+                iniciarAutoClickFerraduras()
+            }, 1000)
+        }
     }
 
     override fun onDestroy() {
@@ -457,43 +464,50 @@ class GameActivity : AppCompatActivity() {
     }
 
     object GameData {
+
         var managers: Int = 0
         var money: Int = 0
-        var upgrades: Int = 0
-        var pregos_upgrades: Boolean = true
         var ferraduras_upgrades: Boolean = false
         var adagas_upgrades: Boolean = false
-        var value_pregos: Int = 1
         var value_ferraduras: Int = 1
-        var timeProductionPregos: Long = 2000L
         var timeProductionFerraduras: Long = 2000L
-        var achievementsId: Int = 0
-        var toolId: Int = 1
-        var next_manager_price: Int = 1
+        var next_manager_price: Int = 0
+
+        var valorProxCompraPrego: Int = 1
+        var value_pregos: Int = 1
+        var pregos_upgrades: Boolean = true
+        var timeProductionPregos: Long = 2000L
+        var amount_pregos: Int = 1
     }
 
     object ProgressHelper {
         fun saveProgress(context: Context) {
-            val progressDAO = ProgressDAO(context)
-            val progress = Progress(
-                GameActivity.GameData.money,
-                GameActivity.GameData.upgrades,
-                GameActivity.GameData.managers,
-                GameActivity.GameData.achievementsId,
-                GameActivity.GameData.toolId
-            )
-            progressDAO.saveOrUpdateProgress(progress)
-            Log.d("Progress", "Progresso salvo: $progress")
+            val prego: Tool = Tool(1, GameData.timeProductionPregos.toInt(),GameData.valorProxCompraPrego, GameData.amount_pregos)
+            ToolDAO(context).saveOrUpdateTool(prego)
+
+            val money: Money = Money(GameData.money)
+            MoneyDAO(context).saveOrUpdateMoney(money.money)
+
+            val manager: Manager = Manager(1, GameData.managers)
+            ManagerDAO(context).saveOrUpdateManager(manager)
         }
 
         fun loadProgress(context: Context) {
-            val progressDAO = ProgressDAO(context)
-            val progress = progressDAO.getProgress()
-            if (progress != null) {
-                GameActivity.GameData.money = progress.money
-                GameActivity.GameData.managers = progress.managerId
+            val tools = ToolDAO(context).getTools()
+            val money = MoneyDAO(context).getMoney()
+            val managers = ManagerDAO(context).getManagers()
+
+            if (tools.isNotEmpty()) {
+                GameActivity.GameData.timeProductionPregos = tools[0].tempoProducao.toLong()
+                GameActivity.GameData.valorProxCompraPrego = tools[0].valorProxCompra
+                GameActivity.GameData.amount_pregos = tools[0].quantidade
             }
-            Log.d("Progress", "Progresso carregado: $progress")
+            if (money != 0) {
+                GameActivity.GameData.money = money
+            }
+            if (managers.isNotEmpty()) {
+                GameActivity.GameData.managers = managers[0].amount
+            }
         }
     }
 }
