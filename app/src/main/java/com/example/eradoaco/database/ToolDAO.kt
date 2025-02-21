@@ -18,9 +18,12 @@ class ToolDAO(context: Context) {
                 put("TEMPOPRODUCAO", tool.tempoProducao)
                 put("VALORPROXCOMPRA", tool.valorProxCompra)
                 put("QUANTIDADE", tool.quantidade)
+                put("VALOR", tool.valor)
             }
 
             Log.d("ToolDAO", "saveOrUpdateTool: $values")
+            Log.e("ToolDAO", "Tentando salvar: ID=${tool.id}, TEMPOPRODUCAO=${tool.tempoProducao}, VALORPROXCOMPRA=${tool.valorProxCompra}, QUANTIDADE=${tool.quantidade}, VALOR=${tool.valor}")
+
 
             db.update("CLASS_TOOL", values, "ID = ${tool.id}", null)
             db.close()
@@ -31,6 +34,7 @@ class ToolDAO(context: Context) {
                 put("TEMPOPRODUCAO", tool.tempoProducao)
                 put("VALORPROXCOMPRA", tool.valorProxCompra)
                 put("QUANTIDADE", tool.quantidade)
+                put("VALOR", tool.valor)
             }
 
             Log.d("ToolDAO", "saveOrUpdateTool: $values")
@@ -51,7 +55,8 @@ class ToolDAO(context: Context) {
                     cursor.getInt(cursor.getColumnIndexOrThrow("ID")),
                     cursor.getInt(cursor.getColumnIndexOrThrow("TEMPOPRODUCAO")),
                     cursor.getInt(cursor.getColumnIndexOrThrow("VALORPROXCOMPRA")),
-                    cursor.getInt(cursor.getColumnIndexOrThrow("QUANTIDADE"))
+                    cursor.getInt(cursor.getColumnIndexOrThrow("QUANTIDADE")),
+                    cursor.getInt(cursor.getColumnIndexOrThrow("VALOR"))
                 )
             )
         }
